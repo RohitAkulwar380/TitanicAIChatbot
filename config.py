@@ -1,30 +1,16 @@
 """
-config.py — Centralized configuration.
-On Railway: Streamlit and FastAPI both run in the same container.
-nginx proxies them through one public port:
-  /api/* → FastAPI (port 8000)
-  /*     → Streamlit (port 8501)
-
-So BACKEND_URL must be the public Railway URL + /api
-e.g. https://titanicaichatbot-production.up.railway.app/api
+config.py — works for both local dev and split deployment.
 """
-
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# ── LLM ───────────────────────────────────────────────────────────────────────
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_MODEL   = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
-
-# ── Dataset ───────────────────────────────────────────────────────────────────
+GROQ_API_KEY     = os.getenv("GROQ_API_KEY", "")
+GROQ_MODEL       = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 TITANIC_CSV_PATH = os.getenv("TITANIC_CSV_PATH", "titanic.csv")
+BACKEND_PORT     = int(os.getenv("PORT", os.getenv("BACKEND_PORT", "8000")))
 
-# ── Backend ───────────────────────────────────────────────────────────────────
-BACKEND_PORT = int(os.getenv("BACKEND_PORT", "8000"))
-
-# BACKEND_URL is used by the browser's JS to call the API.
-# On Railway set this to: https://YOUR-APP.up.railway.app/api
-# Locally it stays as: http://localhost:8000
+# Streamlit Cloud reads this to know where FastAPI is.
+# Set it to your Railway public URL in Streamlit Cloud secrets.
 BACKEND_URL = os.getenv("BACKEND_URL", f"http://localhost:{BACKEND_PORT}")
