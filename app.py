@@ -25,7 +25,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ── Start FastAPI once per process ───────────────────────────────────────────
-_BACKEND_STARTED = False
+def _port_is_bound(port: int) -> bool:
+    """Returns True if something is already listening on the given port."""
+    import socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(1)
+        return s.connect_ex(("127.0.0.1", port)) == 0
 
 def _start_backend() -> None:
     try:
@@ -35,24 +40,19 @@ def _start_backend() -> None:
     except Exception as e:
         logger.error(f"Backend thread error: {e}")
 
-# Wait for port to be available
-import socket
-def _is_port_in_use(port):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('127.0.0.1', port)) == 0
-
 def _ensure_backend_running() -> None:
-    global _BACKEND_STARTED
-    if not _BACKEND_STARTED:
-        _BACKEND_STARTED = True
+    """
+    Only start the backend if nothing is already listening on BACKEND_PORT.
+    Safely handles Streamlit Cloud re-running app.py on each session
+    without causing address-already-in-use errors.
+    """
+    if not _port_is_bound(BACKEND_PORT):
         t = threading.Thread(target=_start_backend, daemon=True)
         t.start()
-        
-        # Wait up to 5 seconds for backend to start
-        for _ in range(50):
-            if _is_port_in_use(BACKEND_PORT):
-                break
-            time.sleep(0.1)
+        logger.info(f"Backend thread started on port {BACKEND_PORT}")
+        time.sleep(2)
+    else:
+        logger.info(f"Backend already running on port {BACKEND_PORT} — skipping start")
 
 _ensure_backend_running()
 
@@ -391,7 +391,7 @@ CHAT_UI = f"""<!DOCTYPE html>
       <textarea id="ci" rows="1" placeholder="Ask me anything about the Titanic passengers…"></textarea>
       <button class="sbtn" id="sb" onclick="send()" title="Send">&#10148;</button>
     </div>
-    <button class="clr" onclick="clearLog()">&#9875; Clear voyage log</button>
+    <button class="clr" onclick="clear()">&#9875; Clear voyage log</button>
   </div>
 
 </div>
@@ -399,7 +399,7 @@ CHAT_UI = f"""<!DOCTYPE html>
 <div id="toast"></div>
 
 <script>
-  const API = "http://localhost:8000";
+  const API = "{BACKEND_URL}";
   let history = [];
   let busy = false;
   let typN = 0;
@@ -497,8 +497,8 @@ CHAT_UI = f"""<!DOCTYPE html>
 
     // Render markdown bold + line breaks
     bub.innerHTML = text
-      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\\n/g, "<br>");
+      .replace(/[*][*](.*?)[*][*]/g, "<strong>$1</strong>")
+      .replace(/\n/g, "<br>");
 
     if (chart) {{
       const img = document.createElement("img");
@@ -536,7 +536,7 @@ CHAT_UI = f"""<!DOCTYPE html>
     ci.disabled=v;
   }}
 
-  function clearLog() {{
+  function clear() {{
     history=[];
     document.getElementById("messages").innerHTML='<div class="dvd">Begin your inquiry</div>';
     const cw=document.getElementById("chips-wrap");
