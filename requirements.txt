@@ -5,6 +5,7 @@ langchain-community==0.2.6
 langchain-groq==0.1.9
 pandas
 matplotlib
+uvicorn
 plotly
 python-dotenv==1.0.1
 requests==2.32.3
