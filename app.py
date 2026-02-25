@@ -70,7 +70,7 @@ st.markdown("""
 
 
 # ── Load HTML and inject backend URL via a <script> tag ──────────────────────
-html_path = os.path.join(os.path.dirname(__file__), "chat_ui.html")
+html_path = os.path.join(os.path.dirname(__file__), "chatui.html")
 
 try:
     with open(html_path, "r", encoding="utf-8") as f:
