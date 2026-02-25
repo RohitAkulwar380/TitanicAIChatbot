@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --deep: #040d1a;
+            --ocean: #0a2040;
+            --wave: #0d3060;
+            --foam: #1a5080;
+            --gold: #c8a84b;
+            --gold-light: #e8c86b;
+            --copper: #b87333;
+            --ice: #a8d8f0;
+            --mist: #7aaec8;
+            --text: #d8e8f4;
+            --text-dim: #6a90b0;
+            --danger: #c0504a;
+            --radius: 18px;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--deep);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 15% 85%, rgba(10, 50, 110, 0.55) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 70% at 85% 15%, rgba(5, 25, 70, 0.7) 0%, transparent 55%),
+                linear-gradient(180deg, #040d1a 0%, #071526 45%, #0a2040 100%);
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 58px,
+                    rgba(13, 48, 96, 0.08) 58px, rgba(13, 48, 96, 0.08) 59px);
+            pointer-events: none;
+        }
+
+        .p {
+            position: fixed;
+            border-radius: 50%;
+            background: rgba(168, 216, 240, 0.18);
+            animation: drift linear infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes drift {
+            0% {
+                transform: translateY(105vh);
+                opacity: 0;
+            }
+
+            8% {
+                opacity: 0.8;
+            }
+
+            92% {
+                opacity: 0.4;
+            }
+
+            100% {
+                transform: translateY(-8vh) translateX(20px);
+                opacity: 0;
+            }
+        }
+
+        .shell {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 0 18px;
+        }
+
+        .hdr {
+            padding: 18px 0 14px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 1px solid rgba(200, 168, 75, 0.18);
+            flex-shrink: 0;
+        }
+
+        .hdr-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--wave), var(--foam));
+            border-radius: 50%;
+            border: 2px solid rgba(200, 168, 75, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 22px rgba(200, 168, 75, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+        }
+
+        .hdr-copy h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.18rem;
+            font-weight: 700;
+            color: var(--gold-light);
+            letter-spacing: 0.02em;
+        }
+
+        .hdr-copy p {
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .hdr-status {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            flex-shrink: 0;
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #4caf50;
+            box-shadow: 0 0 7px #4caf50;
+            animation: pdot 2.2s ease-in-out infinite;
+        }
+
+        .dot.off {
+            background: var(--danger);
+            box-shadow: 0 0 7px var(--danger);
+            animation: none;
+        }
+
+        @keyframes pdot {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(0.8)
+            }
+        }
+
+        #chips-wrap {
+            padding: 16px 0 6px;
+            flex-shrink: 0;
+        }
+
+        .chips-label {
+            font-size: 0.66rem;
+            color: var(--text-dim);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 9px;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .chip {
+            background: rgba(13, 48, 96, 0.55);
+            border: 1px solid rgba(200, 168, 75, 0.3);
+            color: var(--ice);
+            padding: 5px 13px;
+            border-radius: 20px;
+            font-size: 0.76rem;
+            cursor: pointer;
+            white-space: nowrap;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .chip:hover {
+            background: rgba(200, 168, 75, 0.12);
+            border-color: var(--gold);
+            color: var(--gold-light);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 14px rgba(200, 168, 75, 0.18);
+        }
+
+        #messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            scroll-behavior: smooth;
+        }
+
+        #messages::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        #messages::-webkit-scrollbar-thumb {
+            background: rgba(168, 216, 240, 0.12);
+            border-radius: 2px;
+        }
+
+        .row {
+            display: flex;
+            align-items: flex-end;
+            gap: 9px;
+            animation: sup 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .row.user {
+            flex-direction: row-reverse;
+        }
+
+        @keyframes sup {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .av {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .av.bot {
+            background: linear-gradient(135deg, var(--wave), var(--foam));
+            border: 1.5px solid rgba(200, 168, 75, 0.6);
+            box-shadow: 0 0 10px rgba(200, 168, 75, 0.2);
+        }
+
+        .av.user {
+            background: linear-gradient(135deg, #1a4a7a, #1060a0);
+            border: 1.5px solid rgba(122, 174, 200, 0.5);
+        }
+
+        .bub {
+            max-width: 74%;
+            padding: 11px 15px;
+            border-radius: 18px;
+            font-size: 0.875rem;
+            line-height: 1.65;
+        }
+
+        .bub.bot {
+            background: rgba(10, 32, 64, 0.82);
+            border: 1px solid rgba(13, 48, 96, 0.9);
+            border-bottom-left-radius: 4px;
+            backdrop-filter: blur(14px);
+            color: var(--text);
+        }
+
+        .bub.user {
+            background: linear-gradient(135deg, #0d4070, #0a5090);
+            border: 1px solid rgba(26, 80, 140, 0.5);
+            border-bottom-right-radius: 4px;
+            color: #e8f4ff;
+        }
+
+        .chart-img {
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(200, 168, 75, 0.18);
+            display: block;
+        }
+
+        .tdots {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 2px;
+        }
+
+        .td {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--mist);
+            animation: tb 1.3s ease-in-out infinite;
+        }
+
+        .td:nth-child(2) {
+            animation-delay: .16s
+        }
+
+        .td:nth-child(3) {
+            animation-delay: .32s
+        }
+
+        @keyframes tb {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+                opacity: 0.35
+            }
+
+            30% {
+                transform: translateY(-7px);
+                opacity: 1
+            }
+        }
+
+        .dvd {
+            text-align: center;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dvd::before,
+        .dvd::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(200, 168, 75, 0.13);
+        }
+
+        .inp-area {
+            padding: 12px 0 18px;
+            flex-shrink: 0;
+            border-top: 1px solid rgba(200, 168, 75, 0.1);
+        }
+
+        .inp-row {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            background: rgba(10, 32, 64, 0.65);
+            border: 1px solid rgba(200, 168, 75, 0.22);
+            border-radius: 26px;
+            padding: 7px 7px 7px 17px;
+            backdrop-filter: blur(12px);
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .inp-row:focus-within {
+            border-color: rgba(200, 168, 75, 0.5);
+            box-shadow: 0 0 22px rgba(200, 168, 75, 0.1);
+        }
+
+        #ci {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: 0.88rem;
+            font-family: 'DM Sans', sans-serif;
+            resize: none;
+            max-height: 110px;
+            min-height: 22px;
+            line-height: 1.55;
+        }
+
+        #ci::placeholder {
+            color: var(--text-dim);
+        }
+
+        .sbtn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--gold), var(--copper));
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            transition: all .2s;
+            box-shadow: 0 2px 10px rgba(200, 168, 75, 0.25);
+        }
+
+        .sbtn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 18px rgba(200, 168, 75, 0.4);
+        }
+
+        .sbtn:active {
+            transform: scale(0.94);
+        }
+
+        .sbtn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .clr {
+            display: block;
+            margin: 9px auto 0;
+            background: transparent;
+            border: 1px solid rgba(168, 216, 240, 0.12);
+            color: var(--text-dim);
+            font-size: 0.7rem;
+            padding: 3px 13px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all .2s;
+        }
+
+        .clr:hover {
+            border-color: rgba(192, 80, 74, 0.45);
+            color: #e07070;
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 85px;
+            left: 50%;
+            transform: translateX(-50%) translateY(8px);
+            background: rgba(192, 80, 74, 0.92);
+            color: #fff;
+            padding: 9px 20px;
+            border-radius: 18px;
+            font-size: 0.8rem;
+            backdrop-filter: blur(10px);
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: all .3s ease;
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="p" style="width:3px;height:3px;left:12%;animation-duration:20s;animation-delay:0s"></div>
+    <div class="p" style="width:2px;height:2px;left:32%;animation-duration:26s;animation-delay:5s"></div>
+    <div class="p" style="width:4px;height:4px;left:58%;animation-duration:22s;animation-delay:10s"></div>
+    <div class="p" style="width:2px;height:2px;left:76%;animation-duration:18s;animation-delay:3s"></div>
+    <div class="p" style="width:3px;height:3px;left:88%;animation-duration:24s;animation-delay:14s"></div>
+
+    <div class="shell">
+        <div class="hdr">
+            <div class="hdr-icon">&#128674;</div>
+            <div class="hdr-copy">
+                <h1>Titanic Data Analyst</h1>
+                <p>R.M.S. Titanic &middot; April 1912 &middot; 2,224 souls aboard</p>
+            </div>
+            <div class="hdr-status">
+                <div class="dot" id="dot"></div>
+                <span id="status-label">online</span>
+            </div>
+        </div>
+
+        <div id="chips-wrap">
+            <div class="chips-label">Ask the manifest</div>
+            <div class="chips" id="chips">
+                <span class="chip">What % of passengers were male?</span>
+                <span class="chip">Show a histogram of passenger ages</span>
+                <span class="chip">What was the average ticket fare?</span>
+                <span class="chip">Passengers per embarkation port</span>
+                <span class="chip">What was the survival rate?</span>
+                <span class="chip">Show survival by passenger class</span>
+            </div>
+        </div>
+
+        <div id="messages">
+            <div class="dvd">Begin your inquiry</div>
+        </div>
+
+        <div class="inp-area">
+            <div class="inp-row">
+                <textarea id="ci" rows="1" placeholder="Ask me anything about the Titanic passengers..."></textarea>
+                <button class="sbtn" id="sb" title="Send">&#10148;</button>
+            </div>
+            <button class="clr" id="clr-btn">&#9875; Clear voyage log</button>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        // API URL injected by Python at render time
+        var API = window.BACKEND_URL || "http://localhost:8000";
+
+        var chatHistory = [];
+        var busy = false;
+        var typN = 0;
+        var ci = document.getElementById("ci");
+
+        // Health check
+        function ping() {
+            fetch(API + "/health")
+                .then(function (r) {
+                    document.getElementById("dot").className = r.ok ? "dot" : "dot off";
+                    document.getElementById("status-label").textContent = r.ok ? "online" : "offline";
+                })
+                .catch(function () {
+                    document.getElementById("dot").className = "dot off";
+                    document.getElementById("status-label").textContent = "offline";
+                });
+        }
+        ping();
+        setInterval(ping, 15000);
+
+        // Auto-resize textarea
+        ci.addEventListener("input", function () {
+            ci.style.height = "auto";
+            ci.style.height = Math.min(ci.scrollHeight, 110) + "px";
+        });
+
+        // Enter key to send — stopImmediatePropagation prevents Streamlit parent intercept
+        ci.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                doSend();
+            }
+        }, true);
+
+        // Send button
+        document.getElementById("sb").addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            doSend();
+        });
+
+        // Clear button
+        document.getElementById("clr-btn").addEventListener("click", function () {
+            chatHistory = [];
+            document.getElementById("messages").innerHTML = '<div class="dvd">Begin your inquiry</div>';
+            var cw = document.getElementById("chips-wrap");
+            if (cw) cw.style.display = "block";
+        });
+
+        // Chips
+        document.querySelectorAll(".chip").forEach(function (chip) {
+            chip.addEventListener("click", function () {
+                ci.value = chip.textContent.trim();
+                doSend();
+            });
+        });
+
+        // Main send function
+        function doSend() {
+            var q = ci.value.trim();
+            if (!q || busy) return;
+
+            var cw = document.getElementById("chips-wrap");
+            if (cw) cw.style.display = "none";
+
+            ci.value = "";
+            ci.style.height = "auto";
+            setBusy(true);
+            addMsg("user", q);
+            chatHistory.push({ role: "user", content: q });
+            var tid = addTyping();
+
+            var payload = JSON.stringify({
+                question: q,
+                history: chatHistory.slice(0, chatHistory.length - 1)
+            });
+
+            fetch(API + "/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: payload
+            })
+                .then(function (res) {
+                    removeTyping(tid);
+                    if (!res.ok) {
+                        showToast("Server error " + res.status);
+                        addMsg("bot", "I encountered an error. Please try again.");
+                        setBusy(false);
+                        return;
+                    }
+                    return res.json();
+                })
+                .then(function (d) {
+                    if (!d) return;
+                    var ans = d.answer || "No response received.";
+                    var chart = d.chart_base64 || null;
+                    addMsg("bot", ans, chart);
+                    chatHistory.push({ role: "assistant", content: ans });
+                    setBusy(false);
+                })
+                .catch(function (err) {
+                    removeTyping(tid);
+                    showToast("Connection error — is the backend running?");
+                    addMsg("bot", "Could not reach the backend. Please wait and retry.");
+                    setBusy(false);
+                });
+        }
+
+        function addMsg(role, text, chart) {
+            var msgs = document.getElementById("messages");
+            var row = document.createElement("div");
+            row.className = "row " + role;
+
+            var av = document.createElement("div");
+            av.className = "av " + (role === "user" ? "user" : "bot");
+            av.textContent = role === "user" ? "You" : "A";
+
+            var bub = document.createElement("div");
+            bub.className = "bub " + (role === "user" ? "user" : "bot");
+
+            // Safe text rendering — no regex, no escape issues
+            var parts = text.split("\n");
+            for (var i = 0; i < parts.length; i++) {
+                if (i > 0) bub.appendChild(document.createElement("br"));
+                var span = document.createElement("span");
+                span.textContent = parts[i];
+                bub.appendChild(span);
+            }
+
+            if (chart) {
+                var img = document.createElement("img");
+                img.className = "chart-img";
+                img.src = "data:image/png;base64," + chart;
+                img.alt = "Chart";
+                bub.appendChild(img);
+            }
+
+            if (role === "user") {
+                row.appendChild(bub);
+                row.appendChild(av);
+            } else {
+                row.appendChild(av);
+                row.appendChild(bub);
+            }
+
+            msgs.appendChild(row);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        function addTyping() {
+            var id = "t" + (++typN);
+            var msgs = document.getElementById("messages");
+            var row = document.createElement("div");
+            row.className = "row"; row.id = id;
+            var av = document.createElement("div");
+            av.className = "av bot"; av.textContent = "A";
+            var bub = document.createElement("div");
+            bub.className = "bub bot";
+            bub.innerHTML = '<div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div>';
+            row.appendChild(av);
+            row.appendChild(bub);
+            msgs.appendChild(row);
+            msgs.scrollTop = msgs.scrollHeight;
+            return id;
+        }
+
+        function removeTyping(id) {
+            var el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function setBusy(v) {
+            busy = v;
+            var b = document.getElementById("sb");
+            b.disabled = v;
+            b.textContent = v ? "..." : ">";
+            ci.disabled = v;
+        }
+
+        function showToast(msg) {
+            var t = document.getElementById("toast");
+            t.textContent = msg;
+            t.classList.add("show");
+            setTimeout(function () { t.classList.remove("show"); }, 4000);
+        }
+    </script>
+</body>
+
+</html>
