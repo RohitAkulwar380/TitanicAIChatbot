@@ -1,12 +1,11 @@
 """
-app.py — Streamlit frontend for Railway deployment.
-FastAPI is started separately by start.sh — this file is UI only.
+app.py — Streamlit Cloud frontend.
+Loads chatui.html and injects BACKEND_URL (Railway FastAPI) via a script tag.
+No thread startup — FastAPI runs separately on Railway.
 """
 
 import streamlit as st
 import streamlit.components.v1 as components
-import logging
-import sys
 import os
 
 st.set_page_config(
@@ -16,13 +15,16 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from config import BACKEND_URL
+# ── Read BACKEND_URL from environment ────────────────────────────────────────
+# On Streamlit Cloud set this in App Settings → Secrets:
+#   BACKEND_URL = "https://titanicaichatbot-production.up.railway.app"
+BACKEND_URL = os.environ.get("BACKEND_URL", "http://localhost:8000")
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# ── Temporary debug line — shows which URL is being injected ─────────────────
+# Remove this line once you confirm it's working
+st.caption(f"API target: `{BACKEND_URL}`")
 
-# ── Strip Streamlit chrome ────────────────────────────────────────────────────
+# ── Strip Streamlit chrome ───────────────────────────────────────────────────
 st.markdown("""
 <style>
   #MainMenu, footer, header, .stDeployButton { visibility: hidden; }
@@ -32,18 +34,19 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ── Load HTML and inject backend URL ─────────────────────────────────────────
-html_path = os.path.join(os.path.dirname(__file__), "chatui.html")
+# ── Load chatui.html ─────────────────────────────────────────────────────────
+html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chatui.html")
 
-try:
-    with open(html_path, "r", encoding="utf-8") as f:
-        html_content = f.read()
-except FileNotFoundError:
-    st.error(f"chatui.html not found at {html_path}.")
+if not os.path.exists(html_path):
+    st.error(f"chatui.html not found at: {html_path}")
+    st.write("Files found:", os.listdir(os.path.dirname(os.path.abspath(__file__))))
     st.stop()
 
-# Inject backend URL as a global JS variable before the HTML runs
-url_injection = f'<script>window.BACKEND_URL = "{BACKEND_URL}";</script>\n'
-html_with_url = url_injection + html_content
+with open(html_path, "r", encoding="utf-8") as f:
+    html_content = f.read()
 
-components.html(html_with_url, height=820, scrolling=False)
+# Prepend a <script> that sets window.BACKEND_URL before anything else runs
+url_script = f'<script>window.BACKEND_URL = "{BACKEND_URL}";</script>\n'
+final_html = url_script + html_content
+
+components.html(final_html, height=820, scrolling=False)
