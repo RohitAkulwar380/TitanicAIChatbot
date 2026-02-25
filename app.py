@@ -371,12 +371,12 @@ CHAT_UI = f"""<!DOCTYPE html>
   <div id="chips-wrap">
     <div class="chips-label">Ask the manifest</div>
     <div class="chips">
-      <span class="chip" onclick="sendChip(this)">What % of passengers were male?</span>
-      <span class="chip" onclick="sendChip(this)">Show a histogram of passenger ages</span>
-      <span class="chip" onclick="sendChip(this)">What was the average ticket fare?</span>
-      <span class="chip" onclick="sendChip(this)">Passengers per embarkation port</span>
-      <span class="chip" onclick="sendChip(this)">What was the survival rate?</span>
-      <span class="chip" onclick="sendChip(this)">Show survival by passenger class</span>
+      <span class="chip" tabindex="0">What % of passengers were male?</span>
+      <span class="chip" tabindex="0">Show a histogram of passenger ages</span>
+      <span class="chip" tabindex="0">What was the average ticket fare?</span>
+      <span class="chip" tabindex="0">Passengers per embarkation port</span>
+      <span class="chip" tabindex="0">What was the survival rate?</span>
+      <span class="chip" tabindex="0">Show survival by passenger class</span>
     </div>
   </div>
 
@@ -389,9 +389,9 @@ CHAT_UI = f"""<!DOCTYPE html>
   <div class="inp-area">
     <div class="inp-row">
       <textarea id="ci" rows="1" placeholder="Ask me anything about the Titanic passengers…"></textarea>
-      <button class="sbtn" id="sb" onclick="send()" title="Send">&#10148;</button>
+      <button class="sbtn" id="sb" title="Send">&#10148;</button>
     </div>
-    <button class="clr" onclick="clear()">&#9875; Clear voyage log</button>
+    <button class="clr" id="clr-btn">&#9875; Clear voyage log</button>
   </div>
 
 </div>
@@ -418,17 +418,54 @@ CHAT_UI = f"""<!DOCTYPE html>
   }}
   ping(); setInterval(ping, 15000);
 
-  // Auto-resize textarea
+  // ── Wire up all interactions after DOM ready ──────────────────────────────
   const ci = document.getElementById("ci");
+
+  // Auto-resize textarea
   ci.addEventListener("input", () => {{
     ci.style.height = "auto";
     ci.style.height = Math.min(ci.scrollHeight, 110) + "px";
   }});
-  ci.addEventListener("keydown", e => {{
-    if (e.key === "Enter" && !e.shiftKey) {{ e.preventDefault(); send(); }}
+
+  // Enter key — use capture:true so we intercept BEFORE Streamlit parent frame
+  ci.addEventListener("keydown", function(e) {{
+    if (e.key === "Enter" && !e.shiftKey) {{
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      send();
+    }}
+  }}, true);
+
+  // Send button
+  document.getElementById("sb").addEventListener("click", function(e) {{
+    e.preventDefault();
+    e.stopPropagation();
+    send();
   }});
 
-  function sendChip(el) {{ ci.value = el.textContent; send(); }}
+  // Clear button
+  document.getElementById("clr-btn").addEventListener("click", function(e) {{
+    e.preventDefault();
+    clearChat();
+  }});
+
+  // Chip clicks — wire up after DOM is ready
+  document.querySelectorAll(".chip").forEach(function(chip) {{
+    chip.addEventListener("click", function(e) {{
+      e.stopPropagation();
+      ci.value = chip.textContent.trim();
+      send();
+    }});
+    // Also allow Enter key on focused chips for accessibility
+    chip.addEventListener("keydown", function(e) {{
+      if (e.key === "Enter" || e.key === " ") {{
+        e.preventDefault();
+        ci.value = chip.textContent.trim();
+        send();
+      }}
+    }});
+  }});
 
   async function send() {{
     const q = ci.value.trim();
@@ -536,7 +573,7 @@ CHAT_UI = f"""<!DOCTYPE html>
     ci.disabled=v;
   }}
 
-  function clear() {{
+  function clearChat() {{
     history=[];
     document.getElementById("messages").innerHTML='<div class="dvd">Begin your inquiry</div>';
     const cw=document.getElementById("chips-wrap");
