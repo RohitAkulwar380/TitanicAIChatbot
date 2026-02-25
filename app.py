@@ -22,7 +22,6 @@ BACKEND_URL = os.environ.get("BACKEND_URL", "http://localhost:8000")
 
 # ── Temporary debug line — shows which URL is being injected ─────────────────
 # Remove this line once you confirm it's working
-st.caption(f"API target: `{BACKEND_URL}`")
 
 # ── Strip Streamlit chrome ───────────────────────────────────────────────────
 st.markdown("""
